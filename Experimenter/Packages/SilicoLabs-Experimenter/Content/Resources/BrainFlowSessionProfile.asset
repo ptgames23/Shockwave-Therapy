@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc1ed36863b240dcb9a342f424b37e37, type: 3}
+  m_Name: BrainFlowSessionProfile
+  m_EditorClassIdentifier: 
+  elementName: BrainFlowSessionProfile
+  description: Enter Description
+  autoReset: 0
+  elementGameObject: {fileID: 0}
+  prefabPath: 
+  elementType: 
+  validElement: 0
+  activated: 0
+  parentElement: 0
+  elementsPath: Assets/Resources/Experiment Elements
+  brainFlowBoardType: 2

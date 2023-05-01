@@ -1,0 +1,359 @@
+/*-------------------------------------------------------*/
+
+/*---------------------- METADATA -----------------------*/
+
+/*-------------------------------------------------------*/
+CREATE TABLE experiment_metadata(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL 
+);
+
+CREATE TABLE session_metadata(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    experiment_metadata_id INTEGER NOT NULL,
+    CONSTRAINT experiment_metadata_FK FOREIGN KEY (experiment_metadata_id) REFERENCES experiment_metadata(id) 
+);
+
+CREATE TABLE block_metadata(
+   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+   name TEXT NOT NULL,
+   description TEXT NOT NULL
+);
+
+CREATE TABLE block_to_session(
+   block_metadata_id INTEGER NOT NULL,
+   session_metadata_id INTEGER NOT NULL,
+   CONSTRAINT block_to_session_block_metadata_FK FOREIGN KEY (block_metadata_id) REFERENCES block_metadata(id),
+   CONSTRAINT block_to_session_session_metadata_FK FOREIGN KEY (session_metadata_id) REFERENCES session_metadata(id) 
+);
+
+CREATE TABLE block_end_contingency_metadata
+(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    logical_operator TEXT NOT NULL,
+    property_value TEXT NOT NULL,
+    when_met TEXT NOT NULL,
+    block_metadata_id INTEGER NOT NULL,
+    property_metadata_id INTEGER NOT NULL,
+    CONSTRAINT block_end_contingency_metadata_block_metadata_FK FOREIGN KEY (block_metadata_id) REFERENCES block_metadata(id),
+    CONSTRAINT block_end_contingency_property_metadata_FK FOREIGN KEY (property_metadata_id) REFERENCES property_metadata(id)
+);
+
+CREATE TABLE trial_metadata
+(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+CREATE TABLE trial_to_block(
+   trial_metadata_id INTEGER NOT NULL,
+   block_metadata_id INTEGER NOT NULL,
+   CONSTRAINT trial_to_block_trial_metadata_FK FOREIGN KEY (trial_metadata_id) REFERENCES trial_metadata(id),
+   CONSTRAINT trial_to_block_block_metadata_FK FOREIGN KEY (block_metadata_id) REFERENCES block_metadata(id) 
+);
+
+CREATE TABLE trial_end_contingency_metadata
+(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    logical_operator TEXT NOT NULL,
+    property_value TEXT NOT NULL,
+    when_met TEXT NOT NULL,
+    trial_metadata_id INTEGER NOT NULL,
+    property_metadata_id INTEGER NOT NULL,
+    CONSTRAINT trial_end_contingency_metadata_trial_metadata_FK FOREIGN KEY (trial_metadata_id) REFERENCES trial_metadata(id),
+    CONSTRAINT trial_end_contingency_property_metadata_FK FOREIGN KEY (property_metadata_id) REFERENCES property_metadata(id)
+);
+
+CREATE TABLE scenescape_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+CREATE TABLE visual_perspective_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+CREATE TABLE trial_element_metadata(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    screen BOOLEAN NOT NULL DEFAULT 0,
+    has_timer BOOLEAN NOT NULL DEFAULT 0,
+    timer_length INTEGER NULL,
+    scenescape_metadata_id INTEGER,
+    mixed_reality_participant_metadata_id INTEGER,
+    visual_perspective_metadata_id INTEGER,   
+    CONSTRAINT scene_scape_FK FOREIGN KEY (scenescape_metadata_id) REFERENCES scenescape_metadata(id),
+    CONSTRAINT mixed_reality_participant_FK FOREIGN KEY (mixed_reality_participant_metadata_id) REFERENCES responsive_object_metadata(id),
+    CONSTRAINT visual_perspective_FK FOREIGN KEY (visual_perspective_metadata_id) REFERENCES visual_perspective_metadata(id)
+);
+
+CREATE TABLE trial_element_end_condition_metadata
+(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    end_key TEXT NULL,
+    logical_operator TEXT NOT NULL,
+    property_value TEXT NOT NULL,
+    response_descriptions Text NULL,
+    trial_element_metadata_id INTEGER NOT NULL,
+    property_metadata_id INTEGER NULL,
+    CONSTRAINT trial_element_end_condition_metadata_trial_element_metadata_FK FOREIGN KEY (trial_element_metadata_id) REFERENCES trial_element_metadata(id),
+    CONSTRAINT block_end_contingencies_property_metadata_FK FOREIGN KEY (property_metadata_id) REFERENCES property_metadata(id)
+);
+
+CREATE TABLE trial_element_to_trial(
+   trial_element_metadata_id INTEGER NOT NULL,
+   trial_metadata_id INTEGER NOT NULL,
+   CONSTRAINT trial_element_metadata_FK FOREIGN KEY (trial_element_metadata_id) REFERENCES trial_element_metadata(id),
+   CONSTRAINT trial_metadata_FK FOREIGN KEY (trial_metadata_id) REFERENCES trial_metadata(id)
+);
+
+CREATE TABLE responsive_object_trial_element_metadata(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    start_active BOOLEAN NOT NULL DEFAULT 0,
+    start_visible BOOLEAN NOT NULL DEFAULT 0,
+    start_solid BOOLEAN NOT NULL DEFAULT 0,
+    start_position_x REAL NOT NULL,
+    start_position_y REAL NOT NULL,
+    start_position_z REAL NOT NULL,
+    random_position BOOLEAN NOT NULL DEFAULT 0,
+    x_position_range REAL NULL,
+    z_position_range REAL NULL,
+    start_rotation REAL NOT NULL,
+    random_rotation BOOLEAN NOT NULL DEFAULT 0,
+    rotation_range REAL NULL,
+    responsive_object_metadata_id INTEGER NOT NULL,
+    trial_element_metadata_id INTEGER NOT NULL,
+    CONSTRAINT responsive_object_instance_responsive_object_metadata_FK FOREIGN KEY (responsive_object_metadata_id) REFERENCES responsive_object_metadata(id),
+    CONSTRAINT responsive_object_trial_element_FK FOREIGN KEY (trial_element_metadata_id) REFERENCES trial_element_metadata(id)
+);
+
+CREATE TABLE property_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    variable_type TEXT NOT NULL,
+    start_value TEXT NOT NULL,
+    auto_reset_on TEXT NOT NULL,
+    responsive_object_trial_element_metadata_id INTEGER NULL,
+    CONSTRAINT property_responsive_object_trial_element_FK FOREIGN KEY (responsive_object_trial_element_metadata_id) REFERENCES responsive_object_trial_element_metadata(id)
+);
+
+
+CREATE TABLE property_response_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    logical_operator TEXT NOT NULL,
+    response_descriptions TEXT NOT NULL,
+    property_value TEXT NOT NULL,
+    property_metadata_id INTEGER NOT NULL,
+    responsive_object_metadata_id INTEGER NULL,
+    CONSTRAINT property_response_metadata_property_FK FOREIGN KEY (property_metadata_id) REFERENCES property_metadata(id),
+    CONSTRAINT property_condition_responsive_object_FK FOREIGN KEY (responsive_object_metadata_id) REFERENCES responsive_object_metadata(id)
+);
+
+CREATE TABLE interaction_response_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    interaction_range REAL NOT NULL,
+    on_trigger_enter_responses TEXT NULL,
+    on_trigger_stay_responses TEXT NULL,
+    on_trigger_exit_responses TEXT NULL,
+    tag_list TEXT NULL, -- Contains a comma separated list of tags
+    responsive_object_metadata_id INTEGER NULL,
+    CONSTRAINT interaction_condition_metadata_responsive_object_metadata_FK FOREIGN KEY (responsive_object_metadata_id) REFERENCES responsive_object_metadata(id)
+);
+
+CREATE TABLE input_response_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    key_code TEXT NOT NULL,
+    button_down_responses TEXT NULL,
+    button_pressed_responses TEXT NULL,
+    button_up_responses TEXT NULL,
+    input_response_map_metadata_id INTEGER NULL,
+    CONSTRAINT input_condition_metadata_input_response_map_metadata_FK FOREIGN KEY (input_response_map_metadata_id) REFERENCES input_response_map_metadata(id)
+);
+
+CREATE TABLE input_response_map_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    response_map_type TEXT NOT NULL
+);
+
+CREATE TABLE responsive_object_metadata (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    avatar_type TEXT NOT NULL,
+    tag TEXT NULL
+);
+
+
+
+/*------------------------------------------------------*/
+
+/*------------------- RUNTIME DATA ---------------------*/
+
+/*------------------------------------------------------*/
+CREATE TABLE experiment_instance (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    experiment_metadata_id INTEGER NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    time_span TEXT,
+    CONSTRAINT experiment_instance_FK FOREIGN KEY (experiment_metadata_id) REFERENCES experiment_metadata(id)
+);
+
+CREATE TABLE session_instance (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    session_metadata_id INTEGER NULL,
+    experiment_instance_id INTEGER,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    time_span TEXT,
+    CONSTRAINT session_instance_FK FOREIGN KEY (session_metadata_id) REFERENCES session_metadata(id),
+    CONSTRAINT session_instance_experiment_instance_FK FOREIGN KEY (experiment_instance_id) REFERENCES experiment_instance(id) 
+);
+
+CREATE TABLE block_instance (
+	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    block_metadata_id INTEGER NULL,
+    session_instance_id INTEGER,
+	start_time DATETIME NOT NULL,
+	end_time DATETIME,
+    time_span TEXT,
+    end_contingency_met INTEGER NULL,
+    CONSTRAINT block_instance_block_end_contingencies_metadata_FK FOREIGN KEY (end_contingency_met) REFERENCES block_end_contingency_metadata(id),
+    CONSTRAINT block_instance_block_metadata_FK FOREIGN KEY (block_metadata_id) REFERENCES block_metadata(id),
+    CONSTRAINT block_instance_session_instance_FK FOREIGN KEY (session_instance_id) REFERENCES session_instance(id)
+);
+
+CREATE TABLE trial_instance (
+	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    trial_metadata_id INTEGER NULL,
+    block_instance_id INTEGER,
+	start_time DATETIME NOT NULL,
+	end_time DATETIME,
+    time_span TEXT,
+	end_contingency_met INTEGER,
+    CONSTRAINT trial_instance_trial_end_contingencies_metadata_FK FOREIGN KEY (end_contingency_met) REFERENCES trial_end_contingency_metadata(id),
+    CONSTRAINT trial_instance_trial_metadata_FK FOREIGN KEY (trial_metadata_id) REFERENCES trial_metadata(id),
+    CONSTRAINT trial_instance_block_instance_FK FOREIGN KEY (block_instance_id) REFERENCES block_instance(id)
+);
+
+CREATE TABLE trial_element_instance (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    time_span TEXT,
+    timed_out BOOLEAN NOT NULL DEFAULT 0,
+    trail_element_end_condition_id INTEGER,
+    trial_element_metadata_id INTEGER NOT NULL,
+    trial_instance_id INTEGER,
+    CONSTRAINT trial_element_instance_trial_element_end_condition_FK FOREIGN KEY (trail_element_end_condition_id) REFERENCES trial_element_end_condition_metadata(id),
+    CONSTRAINT trial_element_instance_trial_element_metadata_FK FOREIGN KEY (trial_element_metadata_id) REFERENCES trial_element_metadata(id),
+    CONSTRAINT trial_element_instance_trial_instance_FK FOREIGN KEY (trial_instance_id) REFERENCES trial_instance(id)
+);
+
+CREATE TABLE responsive_object_instance (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    responsive_object_trial_element_metadata_id INTEGER,
+    mixed_reality_participant_metadata_id INTEGER,
+    trial_element_instance_id INTEGER NOT NULL,
+    CONSTRAINT responsive_object_instance_responsive_object_metadata_FK FOREIGN KEY (responsive_object_trial_element_metadata_id) REFERENCES responsive_object_trial_element_metadata(id),
+    CONSTRAINT responsive_object_instance_mixed_reality_participant_metadata_FK FOREIGN KEY (mixed_reality_participant_metadata_id) REFERENCES responsive_object_metadata(id),
+    CONSTRAINT responsive_object_instance_trial_instance_FK FOREIGN KEY (trial_element_instance_id) REFERENCES trial_element_instance(id)
+);
+
+/* Events */
+CREATE TABLE property_response_event (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    property_response_metadata_id INTEGER NOT NULL,
+    responsive_object_instance_id INTEGER NOT NULL,
+    event_time DATETIME NOT NULL,
+    CONSTRAINT property_condition_event_metadata_FK FOREIGN KEY (property_response_metadata_id) REFERENCES property_response_metadata(id),
+    CONSTRAINT property_condition_event_responsive_object_instance_FK FOREIGN KEY (responsive_object_instance_id) REFERENCES responsive_object_instance(id)
+);
+
+CREATE TABLE input_response_event (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    event_time DATETIME NOT NULL,
+    event_type TEXT NOT NULL,
+    input_condition_metadata_id INTEGER NOT NULL,
+    responsive_object_instance_id INTEGER NOT NULL,
+    CONSTRAINT input_condition_event_metadata_FK FOREIGN KEY (input_condition_metadata_id) REFERENCES input_response_metadata(id),
+    CONSTRAINT input_condition_event_responsive_object_instance_id_FK FOREIGN KEY (responsive_object_instance_id) REFERENCES responsive_object_instance(id)
+);
+
+CREATE TABLE interaction_response_event (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    event_time DATETIME NOT NULL,
+    event_type TEXT NOT NULL, 
+    interaction_condition_metadata_id INTEGER NOT NULL,
+    responsive_object_instance_id INTEGER NOT NULL,
+    other_responsive_object_instance_id INTEGER NOT NULL,
+    CONSTRAINT interaction_response_event_metadata_FK FOREIGN KEY (interaction_condition_metadata_id) REFERENCES interaction_response_metadata(id),
+    CONSTRAINT interaction_response_event_responsive_object_instance_FK FOREIGN KEY (responsive_object_instance_id) REFERENCES responsive_object_instance(id),
+    CONSTRAINT interaction_response_event_other_responsive_object_instance_FK FOREIGN KEY (other_responsive_object_instance_id) REFERENCES responsive_object_instance(id)
+);
+
+/* States */
+CREATE TABLE responsive_object_instance_state (
+	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    update_time DATETIME NOT NULL,
+	position_x REAL NOT NULL,
+	position_y REAL NOT NULL,
+	position_z REAL NOT NULL,
+	rotation_x REAL NOT NULL,
+	rotation_y REAL NOT NULL,
+	rotation_z REAL NOT NULL,
+	active BOOLEAN NOT NULL, 
+	visible BOOLEAN NOT NULL, 
+	solid BOOLEAN NOT NULL, 
+    responsive_object_instance_id INTEGER NOT NULL,
+	CONSTRAINT responsive_object_instance_state_object_FK FOREIGN KEY (responsive_object_instance_id) REFERENCES responsive_object_instance(id)
+);
+
+CREATE TABLE property_state (
+	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	property_value TEXT NOT NULL,
+	update_time DATETIME NOT NULL,
+    property_metadata_id INTEGER NOT NULL,
+    trial_element_instance_id INTEGER NOT NULL,
+	CONSTRAINT property_state_metadata_FK FOREIGN KEY (property_metadata_id) REFERENCES property_metadata(id),
+    CONSTRAINT property_state_trial_element_instance_FK FOREIGN KEY (trial_element_instance_id) REFERENCES trial_element_instance(id)
+);
+
+/* BrainFlow */
+CREATE TABLE brain_flow_session_metadata(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    board Text NOT NULL 
+);
+
+CREATE TABLE brain_flow_session_instance (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    brain_flow_session_metadata_id INTEGER NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    time_span TEXT,
+    CONSTRAINT brain_flow_session_session_instance_FK FOREIGN KEY (brain_flow_session_metadata_id) REFERENCES brain_flow_session_metadata(id)
+
+);
+
+CREATE TABLE brain_flow_marker (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    brain_flow_session_instance_id INTEGER NOT NULL,
+    event_time DATETIME NOT NULL,
+    event_type TEXT,
+    trial_element_instance_id INTEGER NOT NULL,
+    CONSTRAINT brain_flow_marker_trial_element_instance_FK FOREIGN KEY (trial_element_instance_id) REFERENCES trial_element_instance(id),
+    CONSTRAINT brain_flow_marker_brain_flow_session_FK FOREIGN KEY (brain_flow_session_instance_id) REFERENCES brain_flow_session_instance(id)
+);

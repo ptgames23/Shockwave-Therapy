@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1064764732, guid: e0c7a9fb25218804daa477449ded84ac, type: 3}
+  m_Name: EditorData
+  m_EditorClassIdentifier: 
+  userInputText: 
+  openExperiment: {fileID: 0}
+  openElement: {fileID: 11400000, guid: 95ee203f837452d4fbd7797dad149c30, type: 2}
+  targetElement: {fileID: 0}
+  runDataStore: {fileID: 11400000, guid: ee898ac23d99d9a408ecfb7f8fde9120, type: 2}
+  refreshEditor: 1
+  launchMode: 0
+  experimentManager: {fileID: 0}
+  currentTags: []
+  experimentGameObject: {fileID: 0}
+  productKey: 
+  productVersion: 0
+  silicoLabsLogo: {fileID: 0}
+  userName: niralpatel@live.com
+  password: csc427123!
+  rememberMe: 1
+  accountType: 0
+  returnData: 
+  accessToken: 
+  tokenType: 
+  expiryValue: 0
+  services: {fileID: 0}
